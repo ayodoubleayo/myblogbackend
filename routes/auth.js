@@ -24,12 +24,14 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || "7d" });
 
     // HttpOnly cookie
-    res.cookie(COOKIE_NAME, token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+res.cookie(COOKIE_NAME, token, {
+  httpOnly: true,
+  secure: true,           // must be true for cross-site cookies on HTTPS
+  sameSite: "none",       // must be "none" for cross-site requests
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+  path: "/",              // explicit path
+});
+
 
     res.json({ ok: true });
   } catch (err) {
