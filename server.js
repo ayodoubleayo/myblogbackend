@@ -29,7 +29,10 @@ app.use("/uploads", express.static(uploadsPath));
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+origin: (origin, callback) => {
+  callback(null, true);
+},
+credentials: true,
     credentials: true,
   })
 );
@@ -42,7 +45,7 @@ app.use("/api/comments", commentsRoutes);
 // image/video upload route (single file field: 'image')
 app.post("/api/upload", upload.single("image"), (req, res) => {
   if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-  const imageUrl = `http://localhost:${PORT}/uploads/${req.file.filename}`;
+const imageUrl = `${process.env.BACKEND_URL}/uploads/${req.file.filename}`;
   res.json({ url: imageUrl });
 });
 
