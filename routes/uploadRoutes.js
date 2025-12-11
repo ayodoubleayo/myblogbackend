@@ -5,7 +5,7 @@ const router = express.Router();
 
 const BASE_URL =
   process.env.NODE_ENV === "production"
-    ? "https://myblogbackend-3559.onrender.com"
+    ? "https://myblogbackend-3559.onrender.com"   // <-- MUST BE HTTPS
     : "http://localhost:5000";
 
 router.post("/upload", upload.single("image"), (req, res) => {

@@ -1,4 +1,3 @@
-// C:\Users\HomePC\myblogbackend\server.js
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -14,50 +13,68 @@ const { upload, UPLOAD_DIR } = require("./middleware/upload");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// ALWAYS use HTTPS backend for image URLs
+const BACKEND_URL = "https://myblogbackend-3559.onrender.com";
+
 app.use(express.json());
 app.use(cookieParser());
 
-// Ensure uploads directory exists
+// ensure uploads directory exists
 const uploadsPath = path.join(__dirname, UPLOAD_DIR);
 if (!fs.existsSync(uploadsPath)) {
   fs.mkdirSync(uploadsPath, { recursive: true });
-  console.log("Created uploads directory:", uploadsPath);
+  console.log("Created uploads dir:", uploadsPath);
 }
 
-// serve uploaded files
+// serve static uploads folder
 app.use("/uploads", express.static(uploadsPath));
+
+/* ---------------------------------------------
+   UPDATED CORS — STRICT ORIGINS + COOKIES
+---------------------------------------------- */
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://myblogfrontend-1p3y.vercel.app",
+];
 
 app.use(
   cors({
-origin: (origin, callback) => {
-  callback(null, true);
-},
-credentials: true,
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true); // mobile / postman
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
 
-// routes
+/* ---------------------------------------------
+   ROUTES
+---------------------------------------------- */
 app.use("/api/posts", postsRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/comments", commentsRoutes);
 
-// image/video upload route (single file field: 'image')
+/* ---------------------------------------------
+   SINGLE IMAGE UPLOAD
+---------------------------------------------- */
 app.post("/api/upload", upload.single("image"), (req, res) => {
   if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
-  const backendUrl =
-    process.env.NODE_ENV === "production"
-      ? "https://myblogbackend-3559.onrender.com"
-      : "http://localhost:5000";
+  const httpsImageUrl = `${BACKEND_URL}/uploads/${req.file.filename}`;
 
-  const imageUrl = `${backendUrl}/uploads/${req.file.filename}`;
-  res.json({ url: imageUrl });
+  res.json({ url: httpsImageUrl });
 });
 
-
+/* ---------------------------------------------
+   HEALTH CHECK
+---------------------------------------------- */
 app.get("/api/health", (req, res) => res.json({ ok: true }));
 
 app.listen(PORT, () => {
-  console.log(`Backend listening on http://localhost:${PORT}`);
+  console.log(`Backend running on http://localhost:${PORT}`);
 });
