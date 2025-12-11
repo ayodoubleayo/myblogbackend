@@ -35,7 +35,9 @@ app.use("/uploads", express.static(uploadsPath));
 const allowedOrigins = [
   "http://localhost:3000",
   "https://myblogfrontend-1p3y.vercel.app",
+  "https://myblogfrontend-1p3y-bqz0th43q-ayodoubleayos-projects.vercel.app",
 ];
+
 
 app.use(
   cors({
