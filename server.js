@@ -45,9 +45,16 @@ app.use("/api/comments", commentsRoutes);
 // image/video upload route (single file field: 'image')
 app.post("/api/upload", upload.single("image"), (req, res) => {
   if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-const imageUrl = `${process.env.BACKEND_URL}/uploads/${req.file.filename}`;
+
+  const backendUrl =
+    process.env.NODE_ENV === "production"
+      ? "https://myblogbackend-3559.onrender.com"
+      : "http://localhost:5000";
+
+  const imageUrl = `${backendUrl}/uploads/${req.file.filename}`;
   res.json({ url: imageUrl });
 });
+
 
 app.get("/api/health", (req, res) => res.json({ ok: true }));
 
